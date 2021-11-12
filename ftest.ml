@@ -1,7 +1,6 @@
 open Gfile
-    
-let () =
 
+let () =
   (* Check the number of command-line arguments *)
   if Array.length Sys.argv <> 5 then
     begin
@@ -11,10 +10,10 @@ let () =
 
 
   (* Arguments are : infile(1) source-id(2) sink-id(3) outfile(4) *)
-  
+
   let infile = Sys.argv.(1)
   and outfile = Sys.argv.(4)
-  
+
   (* These command-line arguments are not used for the moment. *)
   and _source = int_of_string Sys.argv.(2)
   and _sink = int_of_string Sys.argv.(3)
@@ -27,4 +26,3 @@ let () =
   let () = write_file outfile graph in
 
   ()
-
