@@ -19,10 +19,13 @@ let () =
   and _sink = int_of_string Sys.argv.(3)
   in
 
-  (* Open file *)
+  (*(* Open file *)
   let graph = from_file infile in
 
   (* Rewrite the graph that has been read. *)
-  let () = write_file outfile graph in
+  let () = write_file outfile graph in*)
+
+  let () = export infile outfile in
 
   ()
+  

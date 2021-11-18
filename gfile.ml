@@ -112,3 +112,26 @@ let from_file path =
   close_in infile ;
   final_graph
   
+let export inPath outPath =
+    
+  (* Open a write-file. *)
+  let ff = open_out outPath in
+    let graph = from_file inPath in
+
+    (* Write in this file. *)
+    fprintf ff "digraph graphic_graph {\n" ;
+    fprintf ff "rankdir=LR;\n" ;
+    fprintf ff "size=\"8,5\"\n" ;
+    fprintf ff "node [shape = circle];\n" ;
+
+
+
+    (* Write all arcs *)
+    let _ = e_fold graph (fun count src dst lbl -> fprintf ff "%d -> %d [label = \"%s\"];\n" src dst lbl; count + 1) 0 in
+
+    (*e_iter graph (fun src dst lbl -> fprintf ff "%d -> %d [label = \"%s\"];\n" src dst lbl;)*)
+    fprintf ff "}" ;
+    
+  close_out ff ;
+  ()
+  
