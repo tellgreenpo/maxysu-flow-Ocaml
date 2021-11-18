@@ -1,3 +1,4 @@
 # Ignore compilation result
 .cmo
 .cmi
+.svg
