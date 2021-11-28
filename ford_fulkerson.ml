@@ -78,10 +78,10 @@ let rec update_graph gr path maxflow=
         (clone_nodes gr)) rest maxflow
 
 
-(*
-let ford_fulkerson gr src dst=
-    let rec loop path min gr flow=
+
+let rec ford_fulkerson (gr : 'a graph) (src:id) (dst:id) (compare: 'a -> 'a -> bool) (zero: 'a) queue acu=
+    let maxFlow = 0 and
+    path = bfs gr [] src dst queue [] compare zero in
     match path with
-    | None -> flow
-    | Some path -> let q=Queue.create and
-                        compare a b = a>b  in loop (bfs gr [] src dst q compare 0) (find_min path)*)
+    | None -> acu
+    | Some path -> ford_fulkerson gr src dst compare zero queue (update_graph gr path (find_min ath))

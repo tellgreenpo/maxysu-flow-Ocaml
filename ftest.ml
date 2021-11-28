@@ -25,11 +25,8 @@ let () =
 
   (* Rewrite the graph that has been read. *)
   let () = write_file outfile graph in*)
-  let gr = from_file "graph1.txt" in
-
-  let () = write_file "gmap_test.txt" (gmap gr (fun x -> x-x)) and
-
-  () = export "gmap_test.txt" "gmap_test.svg" in
+  let gr=from_file  infile in
+  let ()=write_file outfile 
 
   ()
   
