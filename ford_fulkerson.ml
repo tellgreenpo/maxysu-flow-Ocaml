@@ -3,6 +3,8 @@ open Tools
 open Queue
 open Array
 open Bool
+open Int
+open Stdlib
 
 
 (*Ne pas utiliser les exceptions => bit monnot*)
@@ -58,13 +60,18 @@ let bfs (gr : 'a graph) visited (src:id) (dst:id) queue path (compare: 'a -> 'a 
 
 
 (**Max flow possible for a path *)
-let find_min path =
-    let rec loop path min = 
-    match path with
-    | [] -> min
-    | (dst,src)::rest -> let mini = Int.min (find_arc src dst) min in loop rest mini
+let find_min gr path =
+    let rec loop gr path mi = 
+    let hidden gr src dst = 
+    match (find_arc gr src dst) with
+    | None -> failwith "hohooo"
+    | Some x -> x
     in
-    loop path Int.max_int
+    match path with
+    | [] -> mi
+    | (dst,src)::rest -> let mini = (Stdlib.min (hidden gr src dst) mi) in loop gr rest mini
+    in
+    loop gr path Int.max_int
 
 (** Need to add on reverse edge and substract on edge*)
 
@@ -79,9 +86,10 @@ let rec update_graph gr path maxflow=
 
 
 
-let rec ford_fulkerson (gr : 'a graph) (src:id) (dst:id) (compare: 'a -> 'a -> bool) (zero: 'a) queue acu=
-    let maxFlow = 0 and
+let rec ford_fulkerson (gr : 'a graph) (src:id) (dst:id) (compare: 'a -> 'a -> bool) (zero: 'a) queue acuGraph acuFlow=
+    let 
     path = bfs gr [] src dst queue [] compare zero in
     match path with
-    | None -> acu
-    | Some path -> ford_fulkerson gr src dst compare zero queue (update_graph gr path (find_min ath))
+    | None -> (acuGraph,acuFlow)
+    | Some path -> let x=(find_min gr path) in
+                ford_fulkerson gr src dst compare zero queue (update_graph gr path x) (acuFlow+x)
