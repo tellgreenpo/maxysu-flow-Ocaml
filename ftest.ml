@@ -1,5 +1,7 @@
 open Gfile
 open Tools
+open Stdlib
+open Ford_fulkerson
 
 let () =
   (* Check the number of command-line arguments *)
@@ -26,7 +28,9 @@ let () =
   (* Rewrite the graph that has been read. *)
   let () = write_file outfile graph in*)
   let gr=from_file  infile in
-  let ()=write_file outfile 
-
-  ()
-  
+  let gint= gmap gr int_of_string and
+  q = Queue.create () in
+  let p = bfs gint [] 0 5 q [] in
+  match p with
+  |(_,result)-> Printf.printf "Max flow is : %i\n%!" result ;
+()

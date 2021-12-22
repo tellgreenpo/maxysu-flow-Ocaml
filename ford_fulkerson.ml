@@ -9,23 +9,24 @@ open Stdlib
 type path = (id*id) list
 (* Check destinations from a node *)
 (* Compare function needs to be implemented for different type of label *)
-let rec arc_loop visited (id1: id) (dst:id) (pat:path) arcs queue (compare: int -> int -> bool) (zero: int)=
+let rec arc_loop visitedNodes (id1: id) (dst:id) (foundPath:path) arcs queue =
     match arcs with
-    | [] -> (false,queue,pat,visited) (* Destination still not found so we signal it with the boolean *)
-    | (id2,x)::rest -> if (Bool.not (List.mem id2 visited)) && (compare x zero)
-        then
-            if id2=dst then (true,queue,((id2,id1)::pat),visited) (* Destination found *)
+    | [] -> (false,queue,foundPath,visitedNodes) (* Destination still not found so we signal it with the boolean *)
+    | (id2,x)::rest -> if (Bool.not (List.mem id2 visitedNodes)) && (x < 0)
+        then (* The destination is not yet visited and the arc value is not 0 *)
+            if id2=dst then (true,queue,((id2,id1)::foundPath),visitedNodes) (* Destination found*)
             else
-                let ()=Queue.push id2 queue in (* Use a queue to push the nodes *)
-                arc_loop (id2::visited) id1 dst ((id2,id1)::pat) rest queue compare zero
-        else arc_loop visited id1 dst pat rest queue compare zero
+                let ()=Queue.push id2 queue in (* Use a queue to push the visited node *)
+                (* Loop again with updated visited nodes list and path*)
+                arc_loop (id2::visitedNodes) id1 dst ((id2,id1)::foundPath) rest queue
+        else arc_loop visitedNodes id1 dst foundPath rest queue
 
 
 
 (*Use list for visited add id *)
 
 (* Pour tester
-let resultTest1 = 
+let resultTest1 =
     let compare a b = a>b and zero = 0 and queue = Queue.create () in
     arc_loop [1] 1 5 [] [(3,2);(7,8);(9,5);(156,98)] queue compare zero
 
@@ -37,20 +38,21 @@ let restulQueueSize element =
 
 
 
-(* Main loop while path found *)
+(* Path finding function *)
 
-let bfs (gr : int graph) visited (src:id) (dst:id) queue (chemin:path) (compare: int -> int -> bool) (zero: int)=
+let bfs (gr : int graph) visitedNodes (src:id) (dst:id) queue (foundPath:path)=
     (* queue is for arc loop to update it *)
-    let rec loop gr visited src dst queue chemin compare zero=
+    let rec loop gr visitedNodes src dst queue foundPath =
         try
-            let u = Queue.take queue in (* use arc_loop with the next element in the queue to explore *)
-            match arc_loop visited u dst chemin (out_arcs gr u) queue compare zero with
+            let actualNode = Queue.take queue in (* use arc_loop with the next element in the queue to explore *)
+            match arc_loop visitedNodes actualNode dst foundPath (out_arcs gr actualNode) queue with
             (* Flag is true = path found => return Some path or continue searching *)
-            |(flag,q,p,visit)-> if flag then Some chemin else loop gr visit src dst q p compare zero (* call it with updated queue visit path*)
+            |(flag,updatedQueue,udpatedPath,updatedVisitedNodes)->
+            if flag then Some foundPath else loop gr updatedVisitedNodes src dst updatedQueue udpatedPath (* call it with updated queue visit path*)
         with
         | Queue.Empty -> None (* Path not found => we return None *)
     in
-    loop gr visited src dst queue chemin compare zero
+    loop gr visitedNodes src dst queue foundPath
 
 (** The rest of the code works only for integer graph *)
 
@@ -60,36 +62,36 @@ let bfs (gr : int graph) visited (src:id) (dst:id) queue (chemin:path) (compare:
 
 
 (**Max posible flow for a path *)
-let find_min gr (chemin:path) =
-    let rec loop gr chemin mi = 
-    let hidden gr src dst = 
+let find_min gr (pathToEvaluate:path) =
+    let rec loop gr auxPath minimum =
+    let hidden gr src dst =
     match (find_arc gr src dst) with
     | None -> failwith "Arc in path does not exist in graph!"
     | Some x -> x
     in
-    match chemin with
-    | [] -> mi
-    | (dst,src)::rest -> let mini = (Stdlib.min (hidden gr src dst) mi) in loop gr rest mini
+    match auxPath with
+    | [] -> minimum
+    | (dst,src)::rest -> let smallestComparedCost = (Stdlib.min (hidden gr src dst) minimum) in loop gr rest smallestComparedCost
     in
-    loop gr chemin Int.max_int
+    loop gr pathToEvaluate Int.max_int
 
 
 (** Conception problem => new graph everytime??? I think its good but need to teste it*)
 (** Update arc from path or add it if it doesn't exist(reverse edge) and if it is not from the path then it simply copies it from the original precedent*)
-let rec update_graph (gr:int graph) (chemin:path) maxflow=
-    match chemin with
+let rec update_graph (gr:int graph) (pathToEvaluate:path) maxflow=
+    match pathToEvaluate with
     | [] -> gr
-    | (dst,src)::rest -> update_graph (e_fold gr 
+    | (dst,src)::rest -> update_graph (e_fold gr
         (fun g id1 id2 x-> if (id1=src)&&(id2=dst) then add_arc g id1 id2 (-maxflow) else if (id2=src)&&(id1=dst) then add_arc g id1 id2 (maxflow) else add_arc g id1 id2 x)
         (clone_nodes gr)) rest maxflow
 
 
 (* Tant qu'on trouve encore un chemin possible => continuer a modifier le graph et maxFlow *)
 (* Termine par retourner le graph d'ecart et le flot maximum *)
-let rec ford_fulkerson (gr : int graph) (src:id) (dst:id) (compare: int -> int -> bool) (zero: int) queue acuGraph acuFlow=
-    let 
-    res = bfs gr [] src dst queue [] compare zero in
+let rec ford_fulkerson (gr : int graph) (src:id) (dst:id) queue acuGraph acuFlow=
+    let
+    res = bfs gr [] src dst queue [] in
     match res with
     | None -> (acuGraph,acuFlow)
     | Some chemin -> let x=(find_min gr chemin) in
-                ford_fulkerson gr src dst compare zero queue (update_graph gr chemin x) (acuFlow+x)
+                ford_fulkerson gr src dst queue (update_graph gr chemin x) (acuFlow+x)
