@@ -13,7 +13,7 @@ val arc_loop : id list -> id -> id -> path -> int out_arcs ->
             bool * id Queue.t * path * id list
 
 
-val bfs : int graph -> id list -> id -> id -> id Queue.t -> path -> path option
+val bfs : int graph -> id list -> id -> id -> id Queue.t -> path option
 
 
 val find_min : int graph -> path -> int

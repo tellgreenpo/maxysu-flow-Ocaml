@@ -30,7 +30,8 @@ let () =
   let gr=from_file  infile in
   let gint= gmap gr int_of_string and
   q = Queue.create () in
-  let p = bfs gint [] 0 5 q [] in
+  let p = bfs gint [] 0 5 q in
   match p with
-  |(_,result)-> Printf.printf "Max flow is : %i\n%!" result ;
+  | Some x -> Printf.printf "Max ";
+  | _ -> Printf.printf "";
 ()

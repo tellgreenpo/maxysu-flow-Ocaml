@@ -12,7 +12,7 @@ type path = (id*id) list
 let rec arc_loop visitedNodes (id1: id) (dst:id) (foundPath:path) arcs queue =
     match arcs with
     | [] -> (false,queue,foundPath,visitedNodes) (* Destination still not found so we signal it with the boolean *)
-    | (id2,x)::rest -> if (Bool.not (List.mem id2 visitedNodes)) && (x < 0)
+    | (id2,x)::rest -> if (Bool.not (List.mem id2 visitedNodes)) && (x >= 0)
         then (* The destination is not yet visited and the arc value is not 0 *)
             if id2=dst then (true,queue,((id2,id1)::foundPath),visitedNodes) (* Destination found*)
             else
@@ -40,7 +40,7 @@ let restulQueueSize element =
 
 (* Path finding function *)
 
-let bfs (gr : int graph) visitedNodes (src:id) (dst:id) queue (foundPath:path)=
+let bfs (gr : int graph) visitedNodes (src:id) (dst:id) queue=
     (* queue is for arc loop to update it *)
     let rec loop gr visitedNodes src dst queue foundPath =
         try
@@ -52,7 +52,7 @@ let bfs (gr : int graph) visitedNodes (src:id) (dst:id) queue (foundPath:path)=
         with
         | Queue.Empty -> None (* Path not found => we return None *)
     in
-    loop gr visitedNodes src dst queue foundPath
+    loop gr visitedNodes src dst queue []
 
 (** The rest of the code works only for integer graph *)
 
@@ -88,9 +88,11 @@ let rec update_graph (gr:int graph) (pathToEvaluate:path) maxflow=
 
 (* Tant qu'on trouve encore un chemin possible => continuer a modifier le graph et maxFlow *)
 (* Termine par retourner le graph d'ecart et le flot maximum *)
+
+(** !!!! Initialize queue with starting point !!!! *)
 let rec ford_fulkerson (gr : int graph) (src:id) (dst:id) queue acuGraph acuFlow=
     let
-    res = bfs gr [] src dst queue [] in
+    res = bfs gr [] src dst queue in
     match res with
     | None -> (acuGraph,acuFlow)
     | Some chemin -> let x=(find_min gr chemin) in
