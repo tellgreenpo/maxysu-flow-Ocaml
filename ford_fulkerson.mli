@@ -16,10 +16,10 @@ val arc_loop : id list -> id -> id -> path -> int out_arcs ->
 val bfs : int graph -> id list -> id -> id -> id Queue.t -> path option
 
 
-val find_min : int graph -> path -> int
+val find_min : int graph -> path -> id ->int
 
 
-val update_graph : int graph -> path -> int -> int graph
+val update_graph : int graph -> path -> int -> id ->int graph
 
 
 val ford_fulkerson : int graph -> id -> id ->

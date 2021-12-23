@@ -46,7 +46,7 @@ let print_visited_nodes l =
 let print_path l=
     let rec hidden l=
     match l with
-    | [] -> Printf.printf "\n"
+    | [] -> Printf.printf " . \n";
     | (x,y)::rest -> Printf.printf "(%i | %i) " x y; hidden rest
     in
     Printf.printf "Found path : ";
@@ -56,15 +56,15 @@ let print_path l=
 
 let test_arc_loop =
     let q = Queue.create ()in
-    match (arc_loop [] 1 6 [] (out_arcs test_graph 1) q) with
+    match (arc_loop [] 1 2 [] (out_arcs test_graph 1) q) with
     | (found,queue,foundPath,visitedNodes) ->
     Printf.printf "========= Test de arc loop =============================== \n";
-    Printf.printf "Expected value : False  Found : %B\n" found;
-    Printf.printf "Expected queue values : 3 2    ";
+    Printf.printf "Expected value : true  Found : %B\n" found;
+    Printf.printf "Expected queue values : 3   ";
     print_queue queue;
     Printf.printf "Expected path : (2 | 1) (3 | 1)    ";
     print_path foundPath;
-    Printf.printf "Expected visited nodes :  2 3    ";
+    Printf.printf "Expected visited nodes :  3    ";
     print_visited_nodes visitedNodes
 
 let test_bfs=
@@ -72,6 +72,22 @@ let test_bfs=
     Printf.printf "========= Test de bfs =============================== \n";
     match (bfs test_graph [] 1 6 q) with
     | None -> Printf.printf "No path found\n";
-    | Some foundPath -> print_path foundPath
+    | Some foundPath ->
+    print_path foundPath
 
-let none = 5
+let test_find_min =
+    Printf.printf "========= Test de find min =============================== \n";
+    Printf.printf "Expected min : 5";
+     let q =Queue.create () in  let ()=Queue.push 1 q in
+     match (bfs test_graph [] 1 6 q) with
+    | None -> Printf.printf "No path found\n";
+    | Some foundPath ->
+    Printf.printf "    Found min : %i\n" (find_min test_graph foundPath 6)
+
+
+let test_ford_fulkerson =
+    Printf.printf "========= Test de ford fulkerson=============================== \n";
+    Printf.printf "Expected maxflow : 8   ";
+    let q =Queue.create () in  let ()=Queue.push 1 q in
+    match (ford_fulkerson test_graph 1 6 q empty_graph 0) with
+    |(g,f) -> Printf.printf "Found flow : %i\n" f; write_file "result.txt" (gmap g string_of_int)
