@@ -70,7 +70,7 @@ let find_min graf (pathToEvaluate:path) (destination:id)=
         | Some x -> x
         in
     match auxPath with
-    | [] -> minimum
+    | [] -> Printf.printf "Found minimum flow : %i\n" minimum; minimum
     | (dst,src)::rest -> let smallestComparedCost = (Stdlib.min (hidden gr src dst) minimum) in
     (** Follow continuity of the path nodes who do not lead to destination are ignored *)
     if dst=previousNode then  loop gr rest smallestComparedCost src else loop gr rest minimum previousNode
