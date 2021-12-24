@@ -19,8 +19,9 @@ val bfs : int graph -> id list -> id -> id -> id Queue.t -> path option
 val find_min : int graph -> path -> id ->int
 
 
-val update_graph : int graph -> path -> int -> id ->int graph
+val update_residual_graph : int graph -> path -> int -> id ->int graph
 
 
-val ford_fulkerson : int graph -> id -> id ->
-                    id Queue.t -> int graph -> int -> (int graph * int)
+val create_residual_graph : int graph -> int graph
+
+val ford_fulkerson : int graph -> id -> id -> (int graph * int)

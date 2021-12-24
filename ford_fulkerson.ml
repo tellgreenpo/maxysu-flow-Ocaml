@@ -12,7 +12,7 @@ type path = (id*id) list
 let rec arc_loop visitedNodes (id1: id) (dst:id) (foundPath:path) arcs queue =
     match arcs with
     | [] -> (false,queue,foundPath,visitedNodes) (* Destination still not found so we signal it with the boolean *)
-    | (id2,x)::rest -> if (Bool.not (List.mem id2 visitedNodes)) && (x >= 0)
+    | (id2,x)::rest -> if (Bool.not (List.mem id2 visitedNodes)) && (x > 0)
         then (* The destination is not yet visited and the arc value is not 0 *)
             if id2=dst then (true,queue,((id2,id1)::foundPath) ,visitedNodes) (* Destination found*)
             else
@@ -22,19 +22,14 @@ let rec arc_loop visitedNodes (id1: id) (dst:id) (foundPath:path) arcs queue =
         else arc_loop visitedNodes id1 dst foundPath rest queue
 
 
-
-(*Use list for visited add id *)
-
-(* Pour tester
-let resultTest1 =
-    let compare a b = a>b and zero = 0 and queue = Queue.create () in
-    arc_loop [1] 1 5 [] [(3,2);(7,8);(9,5);(156,98)] queue compare zero
-
-let restulQueueSize element =
-    match element with
-    | q,_,_-> Queue.length q
-*)
-
+let print_path l=
+    let rec hidden l=
+    match l with
+    | [] -> Printf.printf " . \n";
+    | (x,y)::rest -> Printf.printf "(%i | %i) " x y; hidden rest
+    in
+    Printf.printf "Found path : ";
+    hidden l
 
 
 
@@ -43,12 +38,14 @@ let restulQueueSize element =
 let bfs (graf : int graph) visitedNodes (source:id) (destination:id) queue=
     (* queue is for arc loop to update it *)
     let rec loop gr visited src dst q foundPath =
+        let () = Printf.printf "Starting node : %i   " src in
         try
             let actualNode = Queue.take q in (* use arc_loop with the next element in the queue to explore *)
+            let ()= Printf.printf "Actual exploring node : %i \n" actualNode in
             match arc_loop visited actualNode dst foundPath (out_arcs gr actualNode) q with
             (* Flag is true = path found => return Some path or continue searching *)
-            |(flag,updatedQueue,udpatedPath,updatedVisitedNodes)->
-            if flag=true then Some udpatedPath else loop gr updatedVisitedNodes src dst updatedQueue udpatedPath (* call it with updated queue visit path*)
+            | (flag,updatedQueue,udpatedPath,updatedVisitedNodes)->
+            if flag=true then let () = print_path udpatedPath in Some udpatedPath else loop gr updatedVisitedNodes src dst updatedQueue udpatedPath (* call it with updated queue visit path*)
         with
         | Queue.Empty -> None (* Path not found => we return None *)
     in
@@ -63,44 +60,48 @@ let bfs (graf : int graph) visitedNodes (source:id) (destination:id) queue=
 
 (**Max posible flow for a path *)
 let find_min graf (pathToEvaluate:path) (destination:id)=
-    let rec loop gr auxPath minimum previousNode =
+    let rec loop gr auxPath previousNode minimum source destination=
         let hidden g src dst =
         match (find_arc g src dst) with
         | None -> failwith "Arc in path does not exist in graph!"
         | Some x -> x
         in
     match auxPath with
-    | [] -> Printf.printf "Found minimum flow : %i\n" minimum; minimum
+    | [] -> Printf.printf "Found minimum flow : %i from %i -> %i\n" minimum source destination; minimum
     | (dst,src)::rest -> let smallestComparedCost = (Stdlib.min (hidden gr src dst) minimum) in
-    (** Follow continuity of the path nodes who do not lead to destination are ignored *)
-    if dst=previousNode then  loop gr rest smallestComparedCost src else loop gr rest minimum previousNode
+    (** Follow continuity of the path, nodes who do not lead to destination are ignored *)
+    if dst=previousNode then  loop gr rest src smallestComparedCost src dst else loop gr rest previousNode minimum source destination
     in
-    loop graf pathToEvaluate Int.max_int destination
+    loop graf pathToEvaluate destination Int.max_int (-1) (-1)
+
+let create_residual_graph gr =
+    let add_reverse_arc g id1 id2 x = add_arc g id2 id1 0 in
+    e_fold gr add_reverse_arc (gr)
 
 
-(** Conception problem => new graph everytime??? Seems good but need to test it*)
-(** Update arc from path or add it if it doesn't exist(reverse edge) and if it is not from the path then it simply copies it from the original precedent*)
-let rec update_graph (gr:int graph) (pathToEvaluate:path) maxflow previousNode =
-    match pathToEvaluate with
-    | [] -> gr
-    | (dst,src)::rest -> if dst=previousNode then
-        update_graph (e_fold gr
-        (fun g id1 id2 x-> if (id1=src)&&(id2=dst) then new_arc g id1 id2 (-maxflow) else if (id2=src)&&(id1=dst) then add_arc g id1 id2 (maxflow) else new_arc g id1 id2 x)
-        (clone_nodes gr)) rest maxflow src
-    else update_graph gr rest maxflow previousNode
+let update_residual_graph (gr:int graph) pathToEvaluate maxFlow memoryNode=
+    let rec hidden g inPath flow previousNode acuG=
+    match inPath with
+    | [] -> acuG
+    | (dst,src)::rest -> if previousNode=dst then
+            let g1 = new_arc g src dst (-flow) in
+            let g2 = add_arc g1 dst src flow in
+            hidden g rest flow src g2
+        else
+            hidden g rest flow previousNode acuG
+    in
+    hidden gr pathToEvaluate maxFlow memoryNode gr
 
 
-(* Tant qu'on trouve encore un chemin possible => continuer a modifier le graph et maxFlow *)
-(* Termine par retourner le graph d'ecart et le flot maximum *)
-
-(** !!!! Initialize queue with starting point !!!! *)
-let ford_fulkerson (gr : int graph) (src:id) (dst:id) queue acuGraph acuFlow=
-    let rec hidden (g : int graph) (source:id) (destination:id) q acuG acuF=
-        let res = bfs g [] source destination q in
+let ford_fulkerson (gr : int graph) (src:id) (dst:id)=
+    let rec hidden (g : int graph) (source:id) (destination:id) acuF=
+        let  queue = Queue.create () in
+        let () = Queue.push source queue in
+        let res = bfs g [source] source destination queue in
         match res with
-        | None -> (acuG,acuF)
-        | Some chemin -> let x=(find_min gr chemin destination) in
-                hidden g source destination q (update_graph g chemin x destination) (acuF+x)
+        | None -> (g,acuF)
+        | Some foundPath -> Printf.printf "source destination : %i %i\n" source destination ;
+                            let x=(find_min g foundPath destination) in
+                            hidden (update_residual_graph g foundPath x destination) source destination (acuF+x)
     in
-    let () = Queue.push src queue in
-    hidden gr src dst queue acuGraph acuFlow
+    hidden (create_residual_graph gr) src dst 0

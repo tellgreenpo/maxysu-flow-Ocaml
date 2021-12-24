@@ -5,7 +5,7 @@ open Ford_fulkerson
 
 let nodes = [1;2;3;4;5;6]
 
-let arcs = [(1,2,16);(1,3,16);
+let arcs = [(1,2,16);(1,3,13);
             (2,3,10);(2,4,12);
             (3,2,4);(3,5,14);
             (4,3,9);(4,6,20);
@@ -79,9 +79,14 @@ let test_find_min =
     | Some foundPath ->
     Printf.printf "    Found min : %i\n" (find_min test_graph foundPath 6)
 
+let test_create_residual =
+    Printf.printf "========= Test de create residual graph=============================== \n";
+    let g = create_residual_graph test_graph in
+    write_file "result_resi.txt" (gmap g string_of_int); export "result_resi.txt" "result_resi"
+
+
 
 let test_ford_fulkerson =
     Printf.printf "========= Test de ford fulkerson=============================== \n";
-    let q =Queue.create () in  let ()=Queue.push 1 q in
-    match (ford_fulkerson test_graph 1 6 q empty_graph 0) with
-    |(g,f) -> Printf.printf "Found flow : %i\n" f; write_file "result.txt" (gmap g string_of_int)
+    match (ford_fulkerson test_graph 1 6 ) with
+    |(g,f) -> Printf.printf "Found flow : %i\n" f ; write_file "result.txt" (gmap g string_of_int); export "result.txt" "result"
