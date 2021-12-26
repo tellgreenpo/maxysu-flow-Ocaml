@@ -100,7 +100,7 @@ let ford_fulkerson (gr : int graph) (src:id) (dst:id)=
         let res = bfs g [source] source destination queue in
         match res with
         | None -> (g,acuF)
-        | Some foundPath -> Printf.printf "source destination : %i %i\n" source destination ;
+        | Some foundPath ->
                             let x=(find_min g foundPath destination) in
                             hidden (update_residual_graph g foundPath x destination) source destination (acuF+x)
     in
