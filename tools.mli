@@ -8,3 +8,11 @@ val gmap : 'a graph -> ('a -> 'b) -> 'b graph
 
 (* adds n to the value of the arc between id1 and id2. If the arc does not exist, it is created. *)
 val add_arc: int graph -> id -> id -> int -> int graph
+
+val create_graph_from_txt : id list -> (id * id * int) list -> int graph
+
+val print_queue : id Queue.t -> unit
+
+val print_visited_nodes : id list -> unit
+
+val print_path : (id * id) list -> unit

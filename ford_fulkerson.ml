@@ -84,7 +84,7 @@ let update_residual_graph (gr:int graph) pathToEvaluate maxFlow memoryNode=
     match inPath with
     | [] -> acuG
     | (dst,src)::rest -> if previousNode=dst then
-            let g1 = new_arc g src dst (-flow) in
+            let g1 = add_arc acuG src dst (-flow) in
             let g2 = add_arc g1 dst src flow in
             hidden g rest flow src g2
         else
@@ -105,3 +105,19 @@ let ford_fulkerson (gr : int graph) (src:id) (dst:id)=
                             hidden (update_residual_graph g foundPath x destination) source destination (acuF+x)
     in
     hidden (create_residual_graph gr) src dst 0
+
+
+let condition_reverse_arcs residualGraph g id1 id2 =
+    match (find_arc residualGraph id2 id1) with
+    | Some flow -> if flow>0 then Some flow else None
+    | _ -> None
+
+let fold_filter cond g id1 id2 lbl=
+    match (cond g id1 id2) with
+    | Some flow -> add_arc g id1 id2 flow
+    | None -> g
+
+
+let export_flow_graph (originalGraph:int graph) (residualGraph : int graph) =
+    let flowGraph = (clone_nodes originalGraph) and cond = condition_reverse_arcs residualGraph in
+    e_fold originalGraph (fold_filter cond) flowGraph
