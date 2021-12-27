@@ -22,23 +22,11 @@ let rec arc_loop visitedNodes (id1: id) (dst:id) (foundPath:path) arcs queue =
         else arc_loop visitedNodes id1 dst foundPath rest queue
 
 
-let print_path l=
-    let rec hidden l=
-    match l with
-    | [] -> Printf.printf " . \n";
-    | (x,y)::rest -> Printf.printf "(%i | %i) " x y; hidden rest
-    in
-    Printf.printf "Found path : ";
-    hidden l
-
-
-
 (* Path finding function *)
 
 let bfs (graf : int graph) visitedNodes (source:id) (destination:id) queue=
     (* queue is for arc loop to update it *)
     let rec loop gr visited src dst q foundPath =
-        let () = Printf.printf "Starting node : %i   " src in
         try
             let actualNode = Queue.take q in (* use arc_loop with the next element in the queue to explore *)
             let ()= Printf.printf "Actual exploring node : %i \n" actualNode in
@@ -50,12 +38,6 @@ let bfs (graf : int graph) visitedNodes (source:id) (destination:id) queue=
         | Queue.Empty -> None (* Path not found => we return None *)
     in
     loop graf visitedNodes source destination queue []
-
-(** The rest of the code works only for integer graph *)
-
-(**residual graph with edges and reverse edges *)
-(*let add_reverse_edges_graph gr = e_fold gr (fun g id1 id2 x -> new_arc g id2 id1 0) (clone_nodes gr) *)
-(** Use add arc directly to make add negative value if needed *)
 
 
 (**Max posible flow for a path *)
@@ -105,19 +87,3 @@ let ford_fulkerson (gr : int graph) (src:id) (dst:id)=
                             hidden (update_residual_graph g foundPath x destination) source destination (acuF+x)
     in
     hidden (create_residual_graph gr) src dst 0
-
-
-let condition_reverse_arcs residualGraph g id1 id2 =
-    match (find_arc residualGraph id2 id1) with
-    | Some flow -> if flow>0 then Some flow else None
-    | _ -> None
-
-let fold_filter cond g id1 id2 lbl=
-    match (cond g id1 id2) with
-    | Some flow -> add_arc g id1 id2 flow
-    | None -> g
-
-
-let export_flow_graph (originalGraph:int graph) (residualGraph : int graph) =
-    let flowGraph = (clone_nodes originalGraph) and cond = condition_reverse_arcs residualGraph in
-    e_fold originalGraph (fold_filter cond) flowGraph

@@ -16,3 +16,5 @@ val print_queue : id Queue.t -> unit
 val print_visited_nodes : id list -> unit
 
 val print_path : (id * id) list -> unit
+
+val export_flow_graph : int graph -> int graph -> int graph
