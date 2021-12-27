@@ -3,13 +3,11 @@ open Tools
 open Gfile
 open Ford_fulkerson
 
-let nodes = [1;2;3;4;5;6]
+let nodes = [1;2;3;4]
 
-let arcs = [(1,2,16);(1,3,13);
-            (2,3,10);(2,4,12);
-            (3,2,4);(3,5,14);
-            (4,3,9);(4,6,20);
-            (5,4,7);(5,6,4)]
+let arcs = [(1,2,2);(1,3,4);
+            (2,3,3);(2,4,1);
+            (3,4,5)]
 
 
 let test_graph = create_graph_from_txt nodes arcs
@@ -50,11 +48,11 @@ let test_create_residual =
 
 let test_ford_fulkerson =
     Printf.printf "========= Test de ford fulkerson=============================== \n";
-    match (ford_fulkerson test_graph 1 6 ) with
+    match (ford_fulkerson test_graph 1 4 ) with
     | (g,f) -> Printf.printf "Found flow : %i\n" f ; write_file "result.txt" (gmap g string_of_int); export "result.txt" "result"
 
 
 let test_export_flow_graph =
-    match (ford_fulkerson test_graph 1 6 ) with
+    match (ford_fulkerson test_graph 1 4 ) with
     | (g,_) ->  let flowGraph = export_flow_graph test_graph g in
     write_file "flow.txt" (gmap flowGraph string_of_int); export "flow.txt" "flow"

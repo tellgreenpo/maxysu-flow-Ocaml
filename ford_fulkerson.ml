@@ -29,7 +29,6 @@ let bfs (graf : int graph) visitedNodes (source:id) (destination:id) queue=
     let rec loop gr visited src dst q foundPath =
         try
             let actualNode = Queue.take q in (* use arc_loop with the next element in the queue to explore *)
-            let ()= Printf.printf "Actual exploring node : %i \n" actualNode in
             match arc_loop visited actualNode dst foundPath (out_arcs gr actualNode) q with
             (* Flag is true = path found => return Some path or continue searching *)
             | (flag,updatedQueue,udpatedPath,updatedVisitedNodes)->
