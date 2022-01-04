@@ -65,3 +65,44 @@ let fold_filter cond g id1 id2 lbl=
 let export_flow_graph (originalGraph:int graph) (residualGraph : int graph) =
     let flowGraph = (clone_nodes originalGraph) and cond = condition_reverse_arcs residualGraph in
     e_fold originalGraph (fold_filter cond) flowGraph
+
+(** To check because i was vibing with music*)
+let add_cars (carList : int list) =
+    let rec hidden acu lst=
+    match lst with
+    | [] -> acu
+    | x::element -> hidden (new_node acu x) rest
+    in
+    hidden (new_node empty_graph 0) l
+
+let connect_car_sink (g : int graph) carList=
+    let rec hidden acu l=
+    match l with
+    | [] -> acu
+    | x::rest -> hidden (new_arc acu 0 x 1) rest
+
+
+let create_reachable (g : int graph) reachable addVerticesStations=
+    let rec hidden acu reachableList add car=
+    match reachableList with
+    | [] -> acu
+    | x::rest -> hidden (add acu car x) rest add (car+1)
+    in
+    hidden g reachable addVerticesStations 1
+
+let add_station_vertices (g : int graph) (car : int) (stations : int list)=
+    let rec hidden acu l car =
+    match l with
+    | [] -> acu
+    | station::rest -> if (node_exists acu station) then hidden (new_arc acu car station 1) rest car
+                    else let g2 = new_node acu station in
+                        hidden (new_arc g2 car station 1) rest car
+    in
+    hidden g stations car
+
+(** Cars start at 1 *)
+let create_car_station_graph carList reachable=
+    let g = add_cars carList in
+    let gbis = connect_car_sink g carList in
+    let g2 = create_reachable gbis reachable add_station_vertices in
+    let g3 = n

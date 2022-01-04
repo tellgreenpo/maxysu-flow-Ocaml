@@ -28,10 +28,8 @@ let () =
   (* Rewrite the graph that has been read. *)
   let () = write_file outfile graph in*)
   let gr=from_file  infile in
-  let gint= gmap gr int_of_string and
-  q = Queue.create () in
-  let p = bfs gint [] 0 5 q in
-  match p with
-  | Some x -> Printf.printf "Max ";
-  | _ -> Printf.printf "";
-()
+  let gint= gmap gr int_of_string in
+  match (ford_fulkerson gint _source _sink) with
+  | (g,f) -> Printf.printf "Found max flow : %i\n" f;
+  let flowGraph = export_flow_graph gint g in
+    write_file "flow.txt" (gmap flowGraph string_of_int); export "flow.txt" "flow"
