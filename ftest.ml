@@ -32,4 +32,4 @@ let () =
   match (ford_fulkerson gint _source _sink) with
   | (g,f) -> Printf.printf "Found max flow : %i\n" f;
   let flowGraph = export_flow_graph gint g in
-    write_file "flow.txt" (gmap flowGraph string_of_int); export "flow.txt" "flow"
+    write_file "outfile.txt" (gmap flowGraph string_of_int); export "outfile.txt" outfile
