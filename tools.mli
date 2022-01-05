@@ -18,3 +18,5 @@ val print_visited_nodes : id list -> unit
 val print_path : (id * id) list -> unit
 
 val export_flow_graph : int graph -> int graph -> int graph
+
+val create_car_station_graph : int list -> int list -> (int list) list -> int graph

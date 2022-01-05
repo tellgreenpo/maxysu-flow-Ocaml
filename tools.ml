@@ -67,42 +67,60 @@ let export_flow_graph (originalGraph:int graph) (residualGraph : int graph) =
     e_fold originalGraph (fold_filter cond) flowGraph
 
 (** To check because i was vibing with music*)
+(** Returns graph with cars and source *)
 let add_cars (carList : int list) =
     let rec hidden acu lst=
     match lst with
     | [] -> acu
-    | x::element -> hidden (new_node acu x) rest
+    | x::rest -> hidden (new_node acu x) rest
     in
-    hidden (new_node empty_graph 0) l
+    hidden (new_node empty_graph 0) carList
 
-let connect_car_sink (g : int graph) carList=
+
+let connect_car_source (g : int graph) carList=
     let rec hidden acu l=
     match l with
     | [] -> acu
     | x::rest -> hidden (new_arc acu 0 x 1) rest
-
-
-let create_reachable (g : int graph) reachable addVerticesStations=
-    let rec hidden acu reachableList add car=
-    match reachableList with
-    | [] -> acu
-    | x::rest -> hidden (add acu car x) rest add (car+1)
     in
-    hidden g reachable addVerticesStations 1
+    hidden g carList
 
-let add_station_vertices (g : int graph) (car : int) (stations : int list)=
-    let rec hidden acu l car =
+
+let add_stations (g : int graph) (stationList : int list) =
+    let rec hidden acu l index=
+    match l with
+    | [] -> new_node acu (index+1)
+    | x::rest -> hidden (new_node acu x) rest x
+    in
+    hidden g stationList 0
+
+
+let connect_station_sink (g:int graph) (stationList : int list)=
+    let rec hidden acu l dst =
     match l with
     | [] -> acu
-    | station::rest -> if (node_exists acu station) then hidden (new_arc acu car station 1) rest car
-                    else let g2 = new_node acu station in
-                        hidden (new_arc g2 car station 1) rest car
+    | x::rest -> hidden (new_arc acu x dst 1) rest dst
+    and sink = (List.hd (List.rev stationList)+1) in
+    hidden g stationList sink
+
+
+let link_cars_stations (g :int graph) (car: int) (stations: int list)=
+    let rec hidden (acu : int graph) (index: int) (l: int list) =
+    match l with
+    | [] -> acu
+    | station::rest -> hidden (new_arc acu index station 1) index rest
     in
-    hidden g stations car
+    hidden g car stations
+
 
 (** Cars start at 1 *)
-let create_car_station_graph carList reachable=
-    let g = add_cars carList in
-    let gbis = connect_car_sink g carList in
-    let g2 = create_reachable gbis reachable add_station_vertices in
-    let g3 = n
+let create_car_station_graph carList stationList reachable=
+    let rec hidden (g:int graph) reachableStations car=
+    match reachableStations with
+    | [] -> g
+    | stations::rest -> hidden (link_cars_stations g car stations) rest (car+1)
+    and g1 = add_cars carList in
+    let g2 = connect_car_source g1 carList in
+    let g3 = add_stations g2 stationList in
+    let g4 = connect_station_sink g3 stationList in
+    hidden g4 reachable 1
