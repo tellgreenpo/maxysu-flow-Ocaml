@@ -76,7 +76,7 @@ let add_cars (carList : int list) =
     in
     hidden (new_node empty_graph 0) carList
 
-
+(** Connexion de chaque noeud voiture avec la source 0 **)
 let connect_car_source (g : int graph) carList=
     let rec hidden acu l=
     match l with
@@ -85,7 +85,7 @@ let connect_car_source (g : int graph) carList=
     in
     hidden g carList
 
-
+(** Ajoute dans un graphe toutes les stations de la liste **)
 let add_stations (g : int graph) (stationList : int list) =
     let rec hidden acu l index=
     match l with
@@ -94,7 +94,7 @@ let add_stations (g : int graph) (stationList : int list) =
     in
     hidden g stationList 0
 
-
+(** Connecter toutes les stations a la source des stations **)
 let connect_station_sink (g:int graph) (stationList : int list)=
     let rec hidden acu l dst =
     match l with
@@ -103,7 +103,8 @@ let connect_station_sink (g:int graph) (stationList : int list)=
     and sink = (List.hd (List.rev stationList)+1) in
     hidden g stationList sink
 
-
+(** On connecte la voiture aux stations qu'elle peut attendre **)
+(** Tous les arcs valent 1 **)
 let link_cars_stations (g :int graph) (car: int) (stations: int list)=
     let rec hidden (acu : int graph) (index: int) (l: int list) =
     match l with
@@ -114,6 +115,9 @@ let link_cars_stations (g :int graph) (car: int) (stations: int list)=
 
 
 (** Cars start at 1 *)
+(** carList : liste des voitures **)
+(** stationList : liste des stations **)
+(** reachable : liste de listes des station atteignables pour chaque voitures **)
 let create_car_station_graph carList stationList reachable=
     let rec hidden (g:int graph) reachableStations car=
     match reachableStations with
